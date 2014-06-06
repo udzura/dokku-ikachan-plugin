@@ -14,6 +14,8 @@ You should edit setting `$DOKKU_ROOT/dokkurc` (This may be `/home/dokku/dokkurc`
 ```bash
 export IKACHAN_HOST=http://dokku001.example.com:8080
 export IKACHAN_CHANNEL='#ikachan'
+# multiple channels
+export IKACHAN_CHANNEL='#ikachan,#development,#test'
 ```
 
 ## Usage
