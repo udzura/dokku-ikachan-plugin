@@ -80,5 +80,6 @@ case "$HOOK" in
 
     post-deploy)
         echo "✔︎ Deploying $(bold)$APP $(green)finished$(end_chr) on $HOSTNAME" | notify_ikachan
+        echo "-----> Deployed at: $(dokku url $APP)"
         ;;
 esac
