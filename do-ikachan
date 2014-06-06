@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 
 usage() {
   cat << EOH
@@ -58,8 +58,10 @@ red() {
     color_chr; echo "4"
 }
 
+echo "-----> Notifying to Ikachan..."
 # Check the hook is enabled
-if ! echo $IKACHAN_HOOK_ENABLED | sed 's/,/ /g' | xargs -n 1 echo | egrep -q "^$HOOK\$" ; then
+if ! echo $IKACHAN_HOOK_ENABLED | sed 's/,/ /g' | xargs -n 1 echo | grep -x $HOOK > /dev/null ; then
+    echo "-----> Hook $HOOK notification skipped"
     exit
 fi
 
