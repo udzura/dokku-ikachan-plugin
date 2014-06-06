@@ -24,11 +24,11 @@ fi
 HOOK="$1"
 APP="$2"; IMAGE="$3"; HOSTNAME=$(hostname -f);
 
-[ -z "$IKACHAN_HOST" ] && ( echo 'env $IKACHAN_HOST is empty' && exit 1 )
-[ -z "$IKACHAN_CHANNEL" ] && ( echo 'env $IKACHAN_CHANNEL is empty' && exit 1 )
-[ -z "$IKACHAN_HOOK_ENABLED" ] && IKACHAN_HOOK_ENABLED=(pre-build post-build pre-deploy post-deploy)
+[ -z "$IKACHAN_HOST" ] && echo 'env $IKACHAN_HOST is empty' && exit 1
+[ -z "$IKACHAN_CHANNEL" ] && echo 'env $IKACHAN_CHANNEL is empty' && exit 1
+[ -z "$IKACHAN_HOOK_ENABLED" ] && IKACHAN_HOOK_ENABLED="pre-build,post-build,pre-deploy,post-deploy"
 
-do_ikachan() {
+notify_ikachan() {
     message=$( cat - )
     curl -s -X POST -d channel=$IKACHAN_CHANNEL $IKACHAN_HOST/join > /dev/null
     curl -s -X POST -d channel=$IKACHAN_CHANNEL -d message="$message" $IKACHAN_HOST/notice > /dev/null
@@ -38,7 +38,7 @@ color_chr() {
     echo -en "\003"
 }
 
-_end() {
+end_chr() {
     echo -en "\017"
 }
 
@@ -59,20 +59,24 @@ red() {
 }
 
 # Check the hook is enabled
-if ! echo ${array[@]} | xargs -n 1 echo | egrep -q "^$HOOK\$" ; then
+if ! echo $IKACHAN_HOOK_ENABLED | sed 's/,/ /g' | xargs -n 1 echo | egrep -q "^$HOOK\$" ; then
     exit
 fi
 
 case "$HOOK" in
     pre-build)
+        echo "✈︎ Image build for $(bold)$APP $(yellow)started$(end_chr) on $HOSTNAME" | notify_ikachan
         ;;
 
     post-build)
+        echo "✔︎ Image build for $(bold)$APP $(green)finished$(end_chr) on $HOSTNAME" | notify_ikachan
         ;;
 
     pre-deploy)
+        echo "✈︎ Deploying $(bold)$APP $(yellow)started$(end_chr) on $HOSTNAME" | notify_ikachan
         ;;
 
     post-deploy)
+        echo "✔︎ Deploying $(bold)$APP $(green)finished$(end_chr) on $HOSTNAME" | notify_ikachan
         ;;
 esac
