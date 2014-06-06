@@ -22,7 +22,7 @@ Just deploy your app. And then, ikachan will notify to your IRC channel.
 
 ```chat
 ikachan: ✈︎ Image build for minne-chan started on dokku001.example.com
-ikachan: ✈︎ Image build for minne-chan finished on dokku001.example.com
+ikachan: ✔︎ Image build for minne-chan finished on dokku001.example.com
 ...
 ```
 
