@@ -31,8 +31,8 @@ APP="$2"; IMAGE="$3"; HOSTNAME=$(hostname -f);
 notify_ikachan() {
     message=$( cat - )
     for channel in $( echo $IKACHAN_CHANNEL | sed 's/,/ /g' ); do
-        curl -s -X POST -d channel=$IKACHAN_CHANNEL $IKACHAN_HOST/join > /dev/null
-        curl -s -X POST -d channel=$IKACHAN_CHANNEL -d message="$message" $IKACHAN_HOST/notice > /dev/null
+        curl -s -X POST -d channel="$channel" $IKACHAN_HOST/join > /dev/null
+        curl -s -X POST -d channel="$channel" -d message="$message" $IKACHAN_HOST/notice > /dev/null
     done
 }
 
