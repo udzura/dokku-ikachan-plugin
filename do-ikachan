@@ -1,0 +1,84 @@
+#!/bin/bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+usage() {
+  cat << EOH
+Usage: $0 <hook_name> <app> <image>
+usually you use as:
+
+    $0 <hook_name> "\$@"
+
+EOH
+}
+
+if [ -z "$1" ]; then
+    usage
+    exit 1
+fi
+
+if ! which curl > /dev/null; then
+    echo "curl is not installed..."
+    exit 1
+fi
+
+HOOK="$1"
+APP="$2"; IMAGE="$3"; HOSTNAME=$(hostname -f);
+
+[ -z "$IKACHAN_HOST" ] && echo 'env $IKACHAN_HOST is empty' && exit 1
+[ -z "$IKACHAN_CHANNEL" ] && echo 'env $IKACHAN_CHANNEL is empty' && exit 1
+[ -z "$IKACHAN_HOOK_ENABLED" ] && IKACHAN_HOOK_ENABLED="pre-build,post-build,pre-deploy,post-deploy"
+
+notify_ikachan() {
+    message=$( cat - )
+    curl -s -X POST -d channel=$IKACHAN_CHANNEL $IKACHAN_HOST/join > /dev/null
+    curl -s -X POST -d channel=$IKACHAN_CHANNEL -d message="$message" $IKACHAN_HOST/notice > /dev/null
+}
+
+color_chr() {
+    echo -en "\003"
+}
+
+end_chr() {
+    echo -en "\017"
+}
+
+bold() {
+    echo -en "\002"
+}
+
+yellow() {
+    color_chr; echo "8"
+}
+
+green() {
+    color_chr; echo "3"
+}
+
+red() {
+    color_chr; echo "4"
+}
+
+echo "-----> Notifying to Ikachan..."
+# Check the hook is enabled
+if ! echo $IKACHAN_HOOK_ENABLED | sed 's/,/ /g' | xargs -n 1 echo | grep -x $HOOK > /dev/null ; then
+    echo "-----> Hook $HOOK notification skipped"
+    exit
+fi
+
+case "$HOOK" in
+    pre-build)
+        echo "✈︎ Image build for $(bold)$APP $(yellow)started$(end_chr) on $HOSTNAME" | notify_ikachan
+        ;;
+
+    post-build)
+        echo "✔︎ Image build for $(bold)$APP $(green)finished$(end_chr) on $HOSTNAME" | notify_ikachan
+        ;;
+
+    pre-deploy)
+        echo "✈︎ Deploying $(bold)$APP $(yellow)started$(end_chr) on $HOSTNAME" | notify_ikachan
+        ;;
+
+    post-deploy)
+        echo "✔︎ Deploying $(bold)$APP $(green)finished$(end_chr) on $HOSTNAME" | notify_ikachan
+        ;;
+esac
